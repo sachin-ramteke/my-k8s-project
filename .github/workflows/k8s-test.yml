@@ -12,22 +12,25 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: Build Custom Docker Image
+        run: |
+          docker build -t my-custom-app:v1 .
+
       - name: Create KinD Kubernetes Cluster
         uses: helm/kind-action@v1.10.0
         with:
           cluster_name: test-cluster
 
-      - name: Verify Cluster is Healthy
+      - name: Load Image into KinD Cluster
         run: |
-          kubectl cluster-info
-          kubectl get nodes
+          kind load docker-image my-custom-app:v1 --name test-cluster
 
-      - name: Deploy Sample Nginx App
+      - name: Deploy Custom App to Cluster
         run: |
-          kubectl create deployment nginx-web --image=nginx:alpine
-          kubectl rollout status deployment/nginx-web
+          kubectl create deployment custom-web --image=my-custom-app:v1
+          kubectl rollout status deployment/custom-web
 
-      - name: Verify Running Pods
+      - name: Verify Running Custom Pods
         run: |
           kubectl get pods -o wide
           
