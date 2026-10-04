@@ -1,0 +1,33 @@
+name: Free K8s CI/CD with KinD
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  k8s-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Create KinD Kubernetes Cluster
+        uses: helm/kind-action@v1.10.0
+        with:
+          cluster_name: test-cluster
+
+      - name: Verify Cluster is Healthy
+        run: |
+          kubectl cluster-info
+          kubectl get nodes
+
+      - name: Deploy Sample Nginx App
+        run: |
+          kubectl create deployment nginx-web --image=nginx:alpine
+          kubectl rollout status deployment/nginx-web
+
+      - name: Verify Running Pods
+        run: |
+          kubectl get pods -o wide
+          
